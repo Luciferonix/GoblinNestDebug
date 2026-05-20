@@ -1,0 +1,3174 @@
+function scr_button_type_activate_data()
+{
+    if (trigger)
+    {
+        if (act_resize && curve_pos < 1)
+        {
+            var _c_struct = animcurve_get(ac_button_resize);
+            curve_pos += 0.2;
+            var _channel = animcurve_get_channel(_c_struct, "scale");
+            var _val = animcurve_channel_evaluate(_channel, curve_pos);
+            var _x_side = sign(image_xscale);
+            var _y_side = sign(image_yscale);
+            image_xscale = _val * _x_side;
+            image_yscale = _val * _y_side;
+        }
+        else
+        {
+            if (switch_type != -1)
+            {
+                switch_type = !switch_type;
+                image_index = (button_num * 2) + (switch_type * 1);
+            }
+            else
+            {
+                image_index = button_num * 2;
+            }
+            
+            curve_pos = 0;
+            trigger = false;
+            global.click_lock = false;
+            
+            switch (interact_type)
+            {
+                case UnknownEnum.Value_0:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            scr_create_window_button_list(_slot_id, _x, _y, 4, UnknownEnum.Value_0, UnknownEnum.Value_1, scr_create_slot_button, false);
+                            break;
+                        
+                        case 1:
+                            scr_create_window_button_list(_slot_id, _x, _y, 5, UnknownEnum.Value_0, UnknownEnum.Value_2, scr_create_modify_button, false);
+                            break;
+                        
+                        case 2:
+                            global.copy_floor_source5001 = _slot_id.slot_data.slot_floor;
+                            scr_pop_up_debug5001_create("Set source floor", 16777215);
+                            break;
+                        
+                        case 3:
+                            var _floor = global.copy_floor_source5001;
+                            var _floor_dest = _slot_id.slot_data.slot_floor;
+                            var _list_source = global.slot_list[_floor];
+                            var _size = ds_list_size(global.slot_list[_floor_dest]);
+                            var _image_x = 0;
+                            
+                            for (var i = 0; i <= _size; i++)
+                            {
+                                var _slot_id_new = ds_list_find_value(global.slot_list[_floor_dest], _size - i);
+                                
+                                with (_slot_id_new)
+                                {
+                                    if (array_length(slot_data.prop) > 0)
+                                        scr_destroy_all_slot_prop();
+                                    
+                                    instance_destroy();
+                                    ds_list_delete(global.slot_list[_floor_dest], _size - i);
+                                }
+                            }
+                            
+                            global.slot_x[_floor_dest] = 0;
+                            
+                            for (var i = 0; i < ds_list_size(global.slot_list[_floor]); i++)
+                            {
+                                var _slot_id_source = ds_list_find_value(_list_source, i);
+                                
+                                if (variable_struct_exists(_slot_id_source.slot_data, "between_type"))
+                                {
+                                    scr_create_slot(_slot_id_source.slot_data.slot_type, _floor_dest, i, false);
+                                    var _spr = "";
+                                    var _diff = ds_list_find_value(global.slot_list[_floor_dest], i).image_xscale + 2;
+                                    var _scale = 0;
+                                    
+                                    switch (_slot_id_source.slot_data.between_type)
+                                    {
+                                        case UnknownEnum.Value_0:
+                                            _spr = spr_bet_plank;
+                                            _scale = 11;
+                                            break;
+                                        
+                                        case UnknownEnum.Value_1:
+                                            _spr = spr_bet_pillar;
+                                            _scale = 20;
+                                            break;
+                                        
+                                        case UnknownEnum.Value_4:
+                                            _spr = spr_bet_tent;
+                                            _scale = 11;
+                                            break;
+                                        
+                                        case UnknownEnum.Value_2:
+                                            _spr = spr_bet_rock;
+                                            _scale = 15;
+                                            break;
+                                        
+                                        case UnknownEnum.Value_3:
+                                            _spr = spr_bet_brick;
+                                            _scale = 13;
+                                            break;
+                                    }
+                                    
+                                    _diff = _scale - _diff;
+                                    ds_list_find_value(global.slot_list[_floor_dest], i).slot_data.between_type = _slot_id_source.slot_data.between_type;
+                                    ds_list_find_value(global.slot_list[_floor_dest], i).spr_base = _spr;
+                                    ds_list_find_value(global.slot_list[_floor_dest], i).image_xscale += _diff;
+                                    global.slot_x[_floor_dest] += _diff;
+                                    scr_shift_slot(ds_list_find_value(global.slot_list[_floor_dest], i), _diff, _floor_dest);
+                                    
+                                    if (array_length(_slot_id_source.slot_data.prop) > 0)
+                                    {
+                                        scr_pop_up_debug5001_create("Prop detected!", 16777215);
+                                        
+                                        for (var j = 0; j < array_length(_slot_id_source.slot_data.prop); j++)
+                                            scr_create_prop(ds_list_find_value(global.slot_list[_floor_dest], i), _slot_id_source.slot_data.prop[j].prop_type, _slot_id_source.slot_data.prop[j].prop_pos, _slot_id_source.slot_data.prop[j].prop_step);
+                                    }
+                                }
+                                else
+                                {
+                                    scr_create_slot(_slot_id_source.slot_data.slot_type, _floor_dest, i, false);
+                                }
+                                
+                                if (variable_struct_exists(_slot_id_source.slot_data, "h_type"))
+                                {
+                                    scr_set_slot_h_data(ds_list_find_value(global.slot_list[_floor_dest], i), _slot_id_source.slot_data.h_type);
+                                    ds_list_find_value(global.slot_list[_floor_dest], i).spr_base = _slot_id_source.spr_base;
+                                    ds_list_find_value(global.slot_list[_floor_dest], i).slot_data.base_type = _slot_id_source.slot_data.base_type;
+                                }
+                            }
+                            
+                            scr_pop_up_debug5001_create("Pasted source floor", 16777215);
+                            scr_sfx_play(UnknownEnum.Value_2);
+                            break;
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_1:
+                    var _slot_id = source_id.source_id;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _floor = _slot_id.slot_data.slot_floor;
+                            var _pos = ds_list_find_index(global.slot_list[_floor], _slot_id) + 1;
+                            scr_create_slot(UnknownEnum.Value_0, _floor, _pos, true);
+                            break;
+                        
+                        case 1:
+                            var _floor = _slot_id.slot_data.slot_floor;
+                            var _pos = ds_list_find_index(global.slot_list[_floor], _slot_id) + 1;
+                            scr_create_slot(UnknownEnum.Value_1, _floor, _pos, true);
+                            break;
+                        
+                        case 2:
+                            var _floor = _slot_id.slot_data.slot_floor;
+                            var _pos = ds_list_find_index(global.slot_list[_floor], _slot_id) + 1;
+                            scr_create_slot(UnknownEnum.Value_2, _floor, _pos, true);
+                            break;
+                        
+                        case 3:
+                            var _floor = _slot_id.slot_data.slot_floor;
+                            var _pos = ds_list_find_index(global.slot_list[_floor], _slot_id) + 1;
+                            scr_create_slot(UnknownEnum.Value_3, _floor, _pos, true);
+                            break;
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_2:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _num = array_length(global.unlock.edit_between) - 1;
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_6, scr_create_modify_between, false);
+                            break;
+                        
+                        case 1:
+                            var _num = array_length(global.unlock.edit_top);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_7, scr_create_modify_prop, false);
+                            break;
+                        
+                        case 2:
+                            var _num = array_length(global.unlock.edit_mid);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_8, scr_create_modify_prop, false);
+                            break;
+                        
+                        case 3:
+                            var _num = array_length(global.unlock.edit_bot);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_9, scr_create_modify_prop, false);
+                            break;
+                        
+                        case 4:
+                            scr_clear_prop_pos(_slot_id, UnknownEnum.Value_7);
+                            scr_clear_prop_pos(_slot_id, UnknownEnum.Value_8);
+                            scr_clear_prop_pos(_slot_id, UnknownEnum.Value_9);
+                            break;
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_6:
+                    var _slot_id = source_id.source_id;
+                    var _diff = _slot_id.image_xscale + 2;
+                    var _reset_prop = false;
+                    var _noti = false;
+                    var _floor = _slot_id.slot_data.slot_floor;
+                    var _scale, _spr;
+                    
+                    switch (button_num)
+                    {
+                        case UnknownEnum.Value_0:
+                            _spr = spr_bet_plank;
+                            _scale = 11;
+                            break;
+                        
+                        case UnknownEnum.Value_1:
+                            _spr = spr_bet_pillar;
+                            _scale = 20;
+                            break;
+                        
+                        case UnknownEnum.Value_4:
+                            _spr = spr_bet_tent;
+                            _scale = 11;
+                            break;
+                        
+                        case UnknownEnum.Value_2:
+                            _spr = spr_bet_rock;
+                            _scale = 15;
+                            break;
+                        
+                        case UnknownEnum.Value_3:
+                            _spr = spr_bet_brick;
+                            _scale = 13;
+                            break;
+                    }
+                    
+                    _diff = _scale - _diff;
+                    
+                    if ((global.slot_x[_floor] + _diff) <= room_width)
+                    {
+                        with (_slot_id)
+                        {
+                            slot_data.between_type = other.button_num;
+                            spr_base = _spr;
+                            var _num = sprite_get_number(_spr) - 1;
+                            image_xscale += _diff;
+                            global.slot_x[slot_data.slot_floor] += _diff;
+                            scr_shift_slot(id, _diff, slot_data.slot_floor);
+                            _num = array_length(slot_data.prop);
+                            
+                            if (_reset_prop)
+                            {
+                                for (var i = 0; i < _num; i++)
+                                {
+                                    var _prop_id = slot_data.prop[i].prop_id;
+                                    
+                                    with (_prop_id)
+                                        instance_destroy();
+                                }
+                                
+                                slot_data.prop = [];
+                            }
+                            else
+                            {
+                                _diff = sign(_diff) * floor(abs(_diff * 0.5));
+                                
+                                for (var i = 0; i < _num; i++)
+                                {
+                                    var _prop_id = slot_data.prop[i].prop_id;
+                                    
+                                    if (_prop_id.center)
+                                    {
+                                        _prop_id.prop_data.shift_x += _diff;
+                                        slot_data.prop[i] = _prop_id.prop_data;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        scr_pop_up_create(UnknownEnum.Value_30);
+                    }
+                    
+                    scr_check_between_base(_floor, _slot_id);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_7:
+                    var _slot_id = source_id.source_id;
+                    var _exists = scr_clear_prop_pos(_slot_id, interact_type);
+                    
+                    if (_exists == -1 || (_exists != -1 && _exists != button_num))
+                        scr_create_prop(_slot_id, button_num, interact_type, -1);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_8:
+                    var _slot_id = source_id.source_id;
+                    var _exists = scr_clear_prop_pos(_slot_id, interact_type);
+                    
+                    if (_exists == -1 || (_exists != -1 && _exists != button_num))
+                        scr_create_prop(_slot_id, button_num, interact_type, -1);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_9:
+                    var _slot_id = source_id.source_id;
+                    var _exists = scr_clear_prop_pos(_slot_id, interact_type);
+                    
+                    if (_exists == -1 || (_exists != -1 && _exists != button_num))
+                        scr_create_prop(_slot_id, button_num, interact_type, -1);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_19:
+                    scr_create_unit_window_list(id, x, y);
+                    break;
+                
+                case UnknownEnum.Value_34:
+                    if (!quest_on)
+                    {
+                        var _xto = x + 122;
+                        xto = _xto;
+                        yto = y;
+                    }
+                    else
+                    {
+                        xto = 0;
+                    }
+                    
+                    quest_on = !quest_on;
+                    global.val.quest_new = false;
+                    break;
+                
+                case UnknownEnum.Value_3:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _num = array_length(global.unlock.breed);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_10, scr_create_slot_type_button, true);
+                            break;
+                        
+                        case 1:
+                            var _num = array_length(global.unlock.utility);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_11, scr_create_slot_type_button, true);
+                            break;
+                        
+                        case 2:
+                            var _num = array_length(global.unlock.pleasure);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_12, scr_create_slot_type_button, true);
+                            break;
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_5:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _num = array_length(global.unlock.t_breed);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_16, scr_create_slot_type_button, true);
+                            break;
+                        
+                        case 1:
+                            var _num = array_length(global.unlock.t_utility);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_17, scr_create_slot_type_button, true);
+                            break;
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_4:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _num = array_length(global.unlock.b_breed);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_13, scr_create_slot_type_button, true);
+                            break;
+                        
+                        case 1:
+                            var _num = array_length(global.unlock.b_utility);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_14, scr_create_slot_type_button, true);
+                            break;
+                        
+                        case 2:
+                            var _num = array_length(global.unlock.b_other);
+                            scr_create_window_button_list(_slot_id, _x, _y, _num, UnknownEnum.Value_0, UnknownEnum.Value_15, scr_create_slot_type_button, true);
+                            break;
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_10:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_12:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_11:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_13:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_14:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_15:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_16:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_17:
+                    var _slot_id = source_id.source_id;
+                    var _x = source_id.x;
+                    var _y = source_id.y;
+                    scr_set_slot_h_data(_slot_id, button_num);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_26:
+                    var _slot_id = source_id.source_id;
+                    var _icon_array = source_id.icon_array;
+                    var _pos_array = source_id.pos_array;
+                    var _button_num = button_num;
+                    var _leg_pos = -1;
+                    var _leg_part_pos = -1;
+                    
+                    with (_slot_id)
+                    {
+                        var _button_pos = floor(_button_num * 0.5);
+                        var _mod_type = _icon_array[_button_pos];
+                        var _mod_pos = _pos_array[_button_pos];
+                        var _spr_num = sprite_get_number(spr_slot[_mod_pos][UnknownEnum.Value_1]) - 1;
+                        var _shift_min, _shift_max;
+                        
+                        switch (_mod_type)
+                        {
+                            case UnknownEnum.Value_1:
+                                _shift_min = 0;
+                                _shift_max = 2;
+                                break;
+                            
+                            case UnknownEnum.Value_2:
+                                _shift_min = -1;
+                                _shift_max = _spr_num;
+                                break;
+                            
+                            case UnknownEnum.Value_3:
+                                _shift_min = -1;
+                                _shift_max = _spr_num;
+                                break;
+                            
+                            case UnknownEnum.Value_5:
+                                _shift_min = 0;
+                                _shift_max = _spr_num;
+                                break;
+                            
+                            case UnknownEnum.Value_4:
+                                _shift_min = 0;
+                                _shift_max = 1;
+                                break;
+                        }
+                        
+                        if ((_button_num % 2) == 0)
+                            slot_data.mod_index[_mod_pos] = max(slot_data.mod_index[_mod_pos] - 1, _shift_min);
+                        else
+                            slot_data.mod_index[_mod_pos] = min(slot_data.mod_index[_mod_pos] + 1, _shift_max);
+                        
+                        if (slot_data.mod_index[_mod_pos] == _shift_min || slot_data.mod_index[_mod_pos] == _shift_max)
+                            other.sprite_index = spr_button_arrow_2;
+                        else
+                            other.sprite_index = spr_button_arrow;
+                        
+                        if (_mod_type == UnknownEnum.Value_4 && slot_data.anim_struct != -1 && slot_data.h_type != UnknownEnum.Value_23 && slot_data.h_type != UnknownEnum.Value_20 && slot_data.h_type != UnknownEnum.Value_21 && slot_data.h_type != UnknownEnum.Value_22)
+                        {
+                            var _side = ((slot_data.mod_index[_mod_pos] * 2) - 1) * -1;
+                            var _unit_num = array_length(h_unit_list);
+                            
+                            for (var i = 0; i < _unit_num; i++)
+                            {
+                                if (h_unit_list[i].mon_data.mon_state == UnknownEnum.Value_1)
+                                {
+                                    with (h_unit_list[i])
+                                        image_xscale = _side;
+                                }
+                            }
+                        }
+                    }
+                    
+                    var _other_pos = button_num + ((!(button_num % 2) * 2) - 1);
+                    
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_26 && button_num == _other_pos)
+                            sprite_index = spr_button_arrow;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_27:
+                    var _slot_id = source_id.source_id;
+                    var _icon_array = source_id.icon_array;
+                    var _pos_array = source_id.pos_array;
+                    var _button_num = button_num + source_id.skip_row;
+                    
+                    with (_slot_id)
+                    {
+                        if (slot_data.slot_type != UnknownEnum.Value_3)
+                        {
+                            var _leg_pos = -1;
+                            var _leg_part_pos = -1;
+                            var _breast_pos = -1;
+                            var _cape_pos = -1;
+                            var _mod_type = _icon_array[_button_num];
+                            var _mod_pos = _pos_array[_button_num];
+                            var _spr_num = sprite_get_number(spr_slot[_mod_pos][UnknownEnum.Value_1]) - 1;
+                            slot_data.mod_index[_mod_pos] = !slot_data.mod_index[_mod_pos];
+                            
+                            if (slot_data.mod_index[_mod_pos] == 1)
+                                other.sprite_index = spr_button_oval_2;
+                            else
+                                other.sprite_index = spr_button_oval;
+                            
+                            _spr_num = array_length(spr_slot);
+                            
+                            for (var i = 0; i < _spr_num; i++)
+                            {
+                                switch (spr_slot[i][UnknownEnum.Value_0])
+                                {
+                                    case UnknownEnum.Value_8:
+                                        _leg_pos = i;
+                                        break;
+                                    
+                                    case UnknownEnum.Value_9:
+                                        _leg_part_pos = i;
+                                        break;
+                                    
+                                    case UnknownEnum.Value_6:
+                                        _breast_pos = i;
+                                        break;
+                                    
+                                    case UnknownEnum.Value_11:
+                                        _cape_pos = i;
+                                        break;
+                                    
+                                    case UnknownEnum.Value_13:
+                                        if (slot_data.mod_index[i])
+                                        {
+                                            slot_data.load = false;
+                                            
+                                            if (slot_data.anim_struct.char_state == UnknownEnum.Value_0)
+                                            {
+                                                scr_unit_removal(false, true, true, false, -1);
+                                            }
+                                            else if (slot_data.h_step <= 5)
+                                            {
+                                                scr_unit_removal(false, true, true, false, -1);
+                                                slot_data.anim_struct.char_state = UnknownEnum.Value_0;
+                                                slot_data.anim_struct.ff = true;
+                                                slot_data.h_wait = irandom_range(240, 360);
+                                                slot_data.h_step = 0;
+                                                slot_data.h_loop = 0;
+                                                slot_data.load = false;
+                                                slot_data.carry = false;
+                                                h_unit_list = [];
+                                            }
+                                        }
+                                        
+                                        break;
+                                }
+                            }
+                            
+                            if (_leg_part_pos != -1)
+                                slot_data.mod_index[_leg_part_pos] = slot_data.mod_index[_leg_pos];
+                            
+                            if (_cape_pos != -1)
+                                slot_data.mod_index[_cape_pos] = slot_data.mod_index[_breast_pos];
+                        }
+                        else
+                        {
+                            var _mod_pos = _pos_array[_button_num];
+                            slot_data.mod_index[_mod_pos] = !slot_data.mod_index[_mod_pos];
+                            
+                            if (slot_data.mod_index[_mod_pos] == 1)
+                                other.sprite_index = spr_button_oval_2;
+                            else
+                                other.sprite_index = spr_button_oval;
+                            
+                            with (obj_slot)
+                            {
+                                if (slot_data.slot_type == UnknownEnum.Value_3 && slot_data.slot_floor == other.slot_data.slot_floor && id != other.id)
+                                    slot_data.mod_index[_mod_pos] = other.slot_data.mod_index[_mod_pos];
+                            }
+                        }
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_36:
+                    var _slot_id = source_id.source_id;
+                    var _floor = _slot_id.slot_data.slot_floor;
+                    
+                    with (_slot_id)
+                    {
+                        if (slot_data.anim_struct != -1)
+                        {
+                            if (slot_data.h_type == UnknownEnum.Value_39)
+                                global.dirt_fix--;
+                            
+                            if (slot_data.h_type == UnknownEnum.Value_40)
+                                global.death_fix--;
+                            
+                            scr_unit_removal(false, true, true, false, -1);
+                            var _inf = false;
+                            
+                            if (slot_data.h_type == UnknownEnum.Value_5 && array_length(slot_data.prop) > 0)
+                                _inf = true;
+                            
+                            if (!_inf)
+                            {
+                                var _data = scr_h_slot_text_data(slot_data.h_type);
+                                var _price = floor(_data.price * 0.8);
+                                global.val.money += _price;
+                                scr_check_steam_achievement(UnknownEnum.Value_4);
+                                scr_icon_pop_up_create(x + (image_xscale * 0.5), y - 50, _price, UnknownEnum.Value_2, false);
+                                scr_set_slot_h_data(id, -1);
+                                var _list = global.slot_list[_floor];
+                                var _slot_pos = ds_list_find_index(_list, id);
+                                var _check_slot_id = ds_list_find_value(_list, _slot_pos - 1);
+                            }
+                            else
+                            {
+                                scr_pop_up_create(UnknownEnum.Value_16);
+                            }
+                        }
+                        else
+                        {
+                            var _data = scr_slot_type_price_data(slot_data.slot_type);
+                            var _price = floor(_data.price * 0.8);
+                            global.val.money += _price;
+                            scr_check_steam_achievement(UnknownEnum.Value_4);
+                            scr_icon_pop_up_create(x + (image_xscale * 0.5), y - 50, _price, UnknownEnum.Value_2, false);
+                            scr_destroy_all_slot_prop();
+                            var _list = global.slot_list[_floor];
+                            var _slot_pos = ds_list_find_index(_list, id);
+                            var _between_id = ds_list_find_value(_list, _slot_pos + 1);
+                            var _prev_slot_id = ds_list_find_value(_list, _slot_pos - 1);
+                            instance_destroy();
+                            var _diff;
+                            
+                            if (!is_undefined(_between_id) && variable_struct_exists(_between_id.slot_data, "between_type"))
+                            {
+                                _diff = image_xscale + _between_id.image_xscale + 2;
+                                
+                                with (_between_id)
+                                {
+                                    scr_destroy_all_slot_prop();
+                                    instance_destroy();
+                                }
+                                
+                                ds_list_delete(global.slot_list[_floor], _slot_pos);
+                            }
+                            else
+                            {
+                                _diff = image_xscale;
+                            }
+                            
+                            ds_list_delete(global.slot_list[_floor], _slot_pos);
+                            global.slot_x[_floor] -= _diff;
+                            scr_shift_slot(_prev_slot_id, _diff * -1, _floor);
+                            var _check_slot_id = ds_list_find_value(_list, _slot_pos - 1);
+                        }
+                    }
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_61:
+                    global.build_side = !global.build_side;
+                    
+                    if (!global.build_side)
+                        sprite_index = spr_button_side_right;
+                    else
+                        sprite_index = spr_button_side_left;
+                    
+                    break;
+                
+                case UnknownEnum.Value_60:
+                    var _type = source_id.source_id.slot_data.slot_type;
+                    var _base_type = -1;
+                    var _spr = -1;
+                    
+                    switch (source_id.source_id.slot_data.base_type)
+                    {
+                        case UnknownEnum.Value_0:
+                            if (_type == UnknownEnum.Value_0)
+                            {
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_1)
+                                        {
+                                            _spr = spr_slot_back_pillar;
+                                            _base_type = UnknownEnum.Value_1;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_2)
+                                        {
+                                            _spr = spr_slot_back_rock;
+                                            _base_type = UnknownEnum.Value_2;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_3)
+                                        {
+                                            _spr = spr_slot_back_brick;
+                                            _base_type = UnknownEnum.Value_3;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_1)
+                                        {
+                                            _spr = spr_big_slot_back_pillar;
+                                            _base_type = UnknownEnum.Value_1;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_2)
+                                        {
+                                            _spr = spr_big_slot_back_rock;
+                                            _base_type = UnknownEnum.Value_2;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_3)
+                                        {
+                                            _spr = spr_big_slot_back_brick;
+                                            _base_type = UnknownEnum.Value_3;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (_spr != -1)
+                            {
+                                source_id.source_id.spr_base = _spr;
+                                source_id.source_id.slot_data.base_type = _base_type;
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_1:
+                            if (_type == UnknownEnum.Value_0)
+                            {
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_2)
+                                        {
+                                            _spr = spr_slot_back_rock;
+                                            _base_type = UnknownEnum.Value_2;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_3)
+                                        {
+                                            _spr = spr_slot_back_brick;
+                                            _base_type = UnknownEnum.Value_3;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    _spr = spr_slot_back;
+                                    _base_type = UnknownEnum.Value_0;
+                                }
+                            }
+                            else
+                            {
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_2)
+                                        {
+                                            _spr = spr_big_slot_back_rock;
+                                            _base_type = UnknownEnum.Value_2;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_3)
+                                        {
+                                            _spr = spr_big_slot_back_brick;
+                                            _base_type = UnknownEnum.Value_3;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    _spr = spr_big_slot_back;
+                                    _base_type = UnknownEnum.Value_0;
+                                }
+                            }
+                            
+                            if (_spr != -1)
+                            {
+                                source_id.source_id.spr_base = _spr;
+                                source_id.source_id.slot_data.base_type = _base_type;
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_2:
+                            if (_type == UnknownEnum.Value_0)
+                            {
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_3)
+                                        {
+                                            _spr = spr_slot_back_brick;
+                                            _base_type = UnknownEnum.Value_3;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    _spr = spr_slot_back;
+                                    _base_type = UnknownEnum.Value_0;
+                                }
+                            }
+                            else
+                            {
+                                if (_spr == -1)
+                                {
+                                    for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                    {
+                                        if (global.unlock.edit_between[i] == UnknownEnum.Value_3)
+                                        {
+                                            _spr = spr_big_slot_back_brick;
+                                            _base_type = UnknownEnum.Value_3;
+                                        }
+                                    }
+                                }
+                                
+                                if (_spr == -1)
+                                {
+                                    _spr = spr_big_slot_back;
+                                    _base_type = UnknownEnum.Value_0;
+                                }
+                            }
+                            
+                            if (_spr != -1)
+                            {
+                                source_id.source_id.spr_base = _spr;
+                                source_id.source_id.slot_data.base_type = _base_type;
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_3:
+                            if (_type == UnknownEnum.Value_0)
+                            {
+                                source_id.source_id.spr_base = spr_slot_back;
+                                source_id.source_id.slot_data.base_type = UnknownEnum.Value_0;
+                            }
+                            else
+                            {
+                                source_id.source_id.spr_base = spr_big_slot_back;
+                                source_id.source_id.slot_data.base_type = UnknownEnum.Value_0;
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_4:
+                            if (_spr == -1)
+                            {
+                                for (var i = 0; i < array_length(global.unlock.edit_between); i++)
+                                {
+                                    if (global.unlock.edit_between[i] == UnknownEnum.Value_4)
+                                    {
+                                        _spr = spr_tent_back_full;
+                                        _base_type = UnknownEnum.Value_5;
+                                    }
+                                }
+                            }
+                            
+                            if (_spr != -1)
+                            {
+                                source_id.source_id.spr_base = _spr;
+                                source_id.source_id.slot_data.base_type = _base_type;
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_5:
+                            source_id.source_id.spr_base = spr_tent_back;
+                            source_id.source_id.slot_data.base_type = UnknownEnum.Value_4;
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_37:
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_31:
+                    var _slot_id = source_id.source_id;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            if (--global.val.alpha_type < 0)
+                                global.val.alpha_type = UnknownEnum.Value_3;
+                            
+                            break;
+                        
+                        case 1:
+                            if (++global.val.alpha_type > UnknownEnum.Value_3)
+                                global.val.alpha_type = 0;
+                            
+                            break;
+                        
+                        case 2:
+                            global.val.mon_alpha -= 0.25;
+                            
+                            if (global.val.mon_alpha <= 0)
+                                global.val.mon_alpha = 1;
+                            
+                            break;
+                        
+                        case 3:
+                            global.val.mon_alpha += 0.25;
+                            
+                            if (global.val.mon_alpha > 1)
+                                global.val.mon_alpha = 0.25;
+                            
+                            break;
+                        
+                        case 4:
+                            if (--global.val.crate_alpha_type < 0)
+                                global.val.crate_alpha_type = UnknownEnum.Value_3;
+                            
+                            break;
+                        
+                        case 5:
+                            if (++global.val.crate_alpha_type > UnknownEnum.Value_3)
+                                global.val.crate_alpha_type = 0;
+                            
+                            break;
+                        
+                        case 6:
+                            global.val.crate_alpha -= 0.25;
+                            
+                            if (global.val.crate_alpha <= 0)
+                                global.val.crate_alpha = 1;
+                            
+                            break;
+                        
+                        case 7:
+                            global.val.crate_alpha += 0.25;
+                            
+                            if (global.val.crate_alpha > 1)
+                                global.val.crate_alpha = 0.25;
+                            
+                            break;
+                        
+                        case 8:
+                            global.val.sfx_vol = max(0, global.val.sfx_vol - 0.1);
+                            break;
+                        
+                        case 9:
+                            global.val.sfx_vol = min(1, global.val.sfx_vol + 0.1);
+                            break;
+                        
+                        case 10:
+                            global.val.bgm_vol = max(0, global.val.bgm_vol - 0.1);
+                            audio_sound_gain(obj_p.game_bgm, global.val.bgm_vol, 0);
+                            break;
+                        
+                        case 11:
+                            global.val.bgm_vol = min(1, global.val.bgm_vol + 0.1);
+                            audio_sound_gain(obj_p.game_bgm, global.val.bgm_vol, 0);
+                            break;
+                        
+                        case 12:
+                            global.val.ui_place = !global.val.ui_place;
+                            
+                            with (obj_button)
+                            {
+                                if (interact_type == UnknownEnum.Value_32 && button_num >= 2 && button_num <= 4)
+                                    instance_destroy();
+                            }
+                            
+                            with (obj_window)
+                            {
+                                if (interact_type == UnknownEnum.Value_9)
+                                {
+                                    instance_destroy();
+                                    break;
+                                }
+                            }
+                            
+                            with (obj_np)
+                            {
+                                if (!global.val.ui_place)
+                                    scr_create_button_layout(409, 37, -2000, 3, 3, 27, 0, 0, spr_button_ui, UnknownEnum.Value_32, -1, false, scr_create_gui_button, -1, scr_draw_hover_button);
+                                else
+                                    scr_create_button_layout(266, 9, -2000, 3, 3, 27, 0, 0, spr_button_ui_2, UnknownEnum.Value_32, -1, false, scr_create_gui_button, -1, scr_draw_hover_button);
+                            }
+                            
+                            break;
+                        
+                        case 13:
+                            scr_fullscreen_switch();
+                            break;
+                        
+                        case 14:
+                            with (obj_button)
+                            {
+                                if (interact_type == UnknownEnum.Value_53 || interact_type == UnknownEnum.Value_31)
+                                    instance_destroy();
+                            }
+                            
+                            var _group_num = global.val.guide_unlock.num;
+                            
+                            with (source_id)
+                            {
+                                scr_window_draw = scr_draw_guide_window;
+                                var _depth = depth;
+                                scr_create_button_layout(-98, 32, _depth - 1, _group_num, 1, 0, 18, 0, spr_button_guide, UnknownEnum.Value_54, id, false, scr_create_guide_g_button, -1, scr_draw_guide_button);
+                                scr_create_button(-98, 95, _depth - 1, spr_button_long, UnknownEnum.Value_54, id, scr_create_guide_g_button, -1, scr_draw_guide_button, 3, 3);
+                                var _exists = false;
+                                
+                                with (obj_button)
+                                {
+                                    if (interact_type == UnknownEnum.Value_54 && button_num == 0)
+                                    {
+                                        _exists = true;
+                                        image_index = (button_num * 2) + 1;
+                                    }
+                                }
+                                
+                                if (_exists)
+                                {
+                                    var _num;
+                                    
+                                    if ((sign(array_length(global.unlock.t_breed)) + sign(array_length(global.unlock.t_utility))) <= 0)
+                                        _num = 11;
+                                    else
+                                        _num = 12;
+                                    
+                                    _depth = depth;
+                                    scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, UnknownEnum.Value_55, id, false, scr_create_guide_basic_button, -1, scr_draw_guide_button);
+                                }
+                                
+                                if (ds_list_size(global.new_guide_list) > 0)
+                                {
+                                    for (var i = 0; i < ds_list_size(global.new_guide_list); i++)
+                                    {
+                                        if (ds_list_find_value(global.new_guide_list, i) == -1)
+                                        {
+                                            ds_list_delete(global.new_guide_list, i);
+                                            i = ds_list_size(global.new_guide_list);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            break;
+                        
+                        case 15:
+                            for (var i = 0; i <= global.val.floor; i++)
+                                ds_list_destroy(global.slot_list[i]);
+                            
+                            ds_list_destroy(global.unit_list);
+                            ds_list_destroy(global.front_row);
+                            ds_list_destroy(global.back_row);
+                            ds_list_destroy(global.new_button_list);
+                            ds_list_destroy(global.noti_list);
+                            ds_list_destroy(global.inv_list);
+                            ds_list_destroy(global.raid_inv_list);
+                            ds_list_destroy(global.quest_list);
+                            ds_list_destroy(global.new_guide_list);
+                            ds_list_destroy(global.front_row_save);
+                            ds_list_destroy(global.back_row_save);
+                            scr_create_initials();
+                            room_goto(rm_menu);
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_54:
+                    var _guide_create = false;
+                    var _num, _scr, _scr_draw;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            _guide_create = true;
+                            
+                            if ((sign(array_length(global.unlock.t_breed)) + sign(array_length(global.unlock.t_utility))) <= 0)
+                                _num = 11;
+                            else
+                                _num = 12;
+                            
+                            _scr = scr_create_guide_basic_button;
+                            _scr_draw = scr_draw_guide_button;
+                            break;
+                        
+                        case 1:
+                            _guide_create = true;
+                            _num = 8;
+                            _scr = scr_create_guide_raiding_button;
+                            _scr_draw = scr_draw_guide_button;
+                            break;
+                        
+                        case 2:
+                            _guide_create = true;
+                            _num = 12;
+                            _scr = scr_create_guide_cell_button;
+                            _scr_draw = scr_draw_guide_cell_button;
+                            break;
+                        
+                        case 3:
+                            with (obj_button)
+                            {
+                                if (interact_type == UnknownEnum.Value_32 && button_num == UnknownEnum.Value_4)
+                                {
+                                    with (alpha_window)
+                                        instance_destroy();
+                                    
+                                    alpha_window = scr_create_alpha_window();
+                                }
+                            }
+                            
+                            break;
+                    }
+                    
+                    if (_guide_create)
+                    {
+                        with (obj_button)
+                        {
+                            if (interact_type == UnknownEnum.Value_55)
+                                instance_destroy();
+                            
+                            if (interact_type == UnknownEnum.Value_54 && button_num != other.button_num)
+                            {
+                                switch_type = false;
+                                image_index = (button_num * 2) + (switch_type * 1);
+                            }
+                        }
+                        
+                        with (source_id)
+                        {
+                            var _depth = depth;
+                            scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, UnknownEnum.Value_55, id, false, _scr, -1, _scr_draw);
+                        }
+                        
+                        if (button_num == 2)
+                            ds_list_clear(global.new_guide_list);
+                    }
+                    
+                    break;
+                
+                case 5010:
+                    var _slot_id = source_id.source_id;
+                    
+                    switch (button_num)
+                    {
+                        case 5010:
+                            with (obj_button)
+                            {
+                                if (interact_type == UnknownEnum.Value_53 || interact_type == UnknownEnum.Value_31 || interact_type == 5010)
+                                    instance_destroy();
+                            }
+                            
+                            var _debug_categories = 4;
+                            
+                            with (source_id)
+                            {
+                                scr_window_draw = scr_create_debug;
+                                var _depth = depth;
+                                scr_create_button_layout(-98, 27, _depth - 1, _debug_categories, 1, 0, 18, 0, spr_button_guide, 5000, id, false, scr_create_debug_buttons, -1, scr_draw_debug_button);
+                                scr_create_button(-98, 100, _depth - 1, spr_button_long, 5000, id, scr_create_debug_buttons, -1, scr_draw_debug_button, 4, 3);
+                                var _exists = false;
+                            }
+                            
+                            break;
+                    }
+                    
+                    break;
+                
+                case 5000:
+                    var _debug_create = false;
+                    var _button_num = button_num;
+                    var _num, _scr, _scr_draw;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            _debug_create = true;
+                            _num = 2;
+                            _scr = scr_create_debug_general_button;
+                            _scr_draw = scr_draw_debug_button;
+                            break;
+                        
+                        case 1:
+                            _debug_create = true;
+                            _num = 7;
+                            _scr = scr_create_debug_spawn_button;
+                            _scr_draw = scr_draw_debug_button;
+                            break;
+                        
+                        case 2:
+                            _debug_create = true;
+                            _num = 12;
+                            _scr = scr_create_debug_unlock_button;
+                            _scr_draw = scr_draw_debug_button;
+                            break;
+                        
+                        case 3:
+                            _debug_create = true;
+                            _num = 4;
+                            _scr = scr_create_alpha_set_button;
+                            _scr_draw = scr_draw_hover_button;
+                            break;
+                        
+                        case 4:
+                            with (obj_button)
+                            {
+                                if (interact_type == UnknownEnum.Value_32 && button_num == UnknownEnum.Value_4)
+                                {
+                                    with (alpha_window)
+                                        instance_destroy();
+                                    
+                                    alpha_window = scr_create_alpha_window();
+                                }
+                            }
+                            
+                            break;
+                    }
+                    
+                    if (_debug_create)
+                    {
+                        with (obj_button)
+                        {
+                            if (interact_type == 5001 || interact_type == 5003 || interact_type == 5004 || interact_type == 5005 || interact_type == 5006 || interact_type == 5007)
+                                instance_destroy();
+                            
+                            if (interact_type == UnknownEnum.Value_54 && button_num != other.button_num)
+                            {
+                                switch_type = false;
+                                image_index = (button_num * 2) + (switch_type * 1);
+                            }
+                        }
+                        
+                        with (source_id)
+                        {
+                            if (_button_num == 3)
+                            {
+                                var _depth = depth;
+                                scr_window_draw = scr_draw_debug5001_speed_window;
+                                scr_create_button_layout(11, 11, _depth - 1, _num, 2, 23, 12, 0, spr_button_arrow, 5003, id, false, _scr, -1, _scr_draw);
+                            }
+                            else
+                            {
+                                var _depth = depth;
+                                scr_window_draw = scr_create_debug;
+                                scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, 5001, id, false, _scr, -1, _scr_draw);
+                            }
+                        }
+                    }
+                    
+                    break;
+                
+                case 5001:
+                    var _spawn_unit = false;
+                    var _button_num = button_num;
+                    var _unit_name;
+                    
+                    switch (guide_group)
+                    {
+                        case 0:
+                            switch (button_num)
+                            {
+                                case 0:
+                                    scr_pop_up_debug5001_create("This button currently does nothing.", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_1);
+                                    break;
+                                
+                                case 1:
+                                    scr_pop_up_debug5001_create("This button currently does nothing.", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_1);
+                                    break;
+                                
+                                case 2:
+                                    break;
+                                
+                                case 3:
+                                    break;
+                                
+                                case 4:
+                                    break;
+                                
+                                case 5:
+                                    break;
+                                
+                                case 6:
+                                    break;
+                                
+                                case 7:
+                                    break;
+                                
+                                case 8:
+                                    break;
+                                
+                                case 9:
+                                    break;
+                                
+                                case 10:
+                                    break;
+                                
+                                case 11:
+                                    break;
+                            }
+                            
+                            break;
+                        
+                        case 1:
+                            switch (button_num)
+                            {
+                                case 0:
+                                    global.val.food = global.val.food + 100;
+                                    scr_pop_up_debug5001_create("Added 100 food", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                                
+                                case 1:
+                                    global.val.money = global.val.money + 1000;
+                                    scr_pop_up_debug5001_create("Added 1000 gold", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                                
+                                case 2:
+                                    _spawn_unit = true;
+                                    _unit_name = "goblin";
+                                    break;
+                                
+                                case 3:
+                                    _spawn_unit = true;
+                                    _unit_name = "hobgoblin";
+                                    break;
+                                
+                                case 4:
+                                    _spawn_unit = true;
+                                    _unit_name = "tentacle";
+                                    break;
+                                
+                                case 5:
+                                    _spawn_unit = true;
+                                    _unit_name = "ogre";
+                                    break;
+                                
+                                case 6:
+                                    scr_pop_up_debug5001_create("Added cave floor", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    global.val.floor++;
+                                    array_push(global.slot_x, -1);
+                                    array_push(global.slot_list, ds_list_create());
+                                    var _start_id = scr_create_slot(UnknownEnum.Value_4, global.val.floor, 0, false);
+                                    
+                                    with (_start_id)
+                                        scr_create_slot(UnknownEnum.Value_3, global.val.floor, 1, true);
+                                    
+                                    break;
+                                
+                                case 7:
+                                    break;
+                                
+                                case 8:
+                                    break;
+                                
+                                case 9:
+                                    break;
+                                
+                                case 10:
+                                    break;
+                                
+                                case 11:
+                                    break;
+                            }
+                            
+                            break;
+                        
+                        case 2:
+                            var _fail_x;
+                            
+                            if ((button_num % 2) == 0)
+                                _fail_x = -9;
+                            else
+                                _fail_x = 44;
+                            
+                            switch (button_num)
+                            {
+                                case 0:
+                                    if (global.unlock.boss[0] == -1)
+                                    {
+                                        scr_add_event(31, false);
+                                        scr_pop_up_debug5001_create("Unlocked Hathor", 16777215);
+                                        scr_sfx_play(UnknownEnum.Value_2);
+                                    }
+                                    else
+                                    {
+                                        scr_pop_up_debug5001_create("Hathor already unlocked", 255);
+                                        scr_sfx_play(UnknownEnum.Value_1);
+                                        fail_shake = true;
+                                        fail_ori_x = obj_button.shift_x + _fail_x;
+                                    }
+                                    
+                                    break;
+                                
+                                case 1:
+                                    if (global.unlock.boss[1] == -1)
+                                    {
+                                        scr_add_event(32, false);
+                                        scr_pop_up_debug5001_create("Unlocked Nyx", 16777215);
+                                        scr_sfx_play(UnknownEnum.Value_2);
+                                    }
+                                    else
+                                    {
+                                        scr_pop_up_debug5001_create("Nyx already unlocked", 255);
+                                        scr_sfx_play(UnknownEnum.Value_1);
+                                        fail_shake = true;
+                                        fail_ori_x = obj_button.shift_x + _fail_x;
+                                    }
+                                    
+                                    break;
+                                
+                                case 2:
+                                    if (global.unlock.boss[2] == -1)
+                                    {
+                                        scr_add_event(33, false);
+                                        scr_pop_up_debug5001_create("Unlocked Selene", 16777215);
+                                        scr_sfx_play(UnknownEnum.Value_2);
+                                    }
+                                    else
+                                    {
+                                        scr_pop_up_debug5001_create("Selene already unlocked", 255);
+                                        scr_sfx_play(UnknownEnum.Value_1);
+                                        fail_shake = true;
+                                        fail_ori_x = obj_button.shift_x + _fail_x;
+                                    }
+                                    
+                                    break;
+                                
+                                case 3:
+                                    if (global.unlock.boss[3] == -1)
+                                    {
+                                        scr_add_event(34, false);
+                                        scr_pop_up_debug5001_create("Unlocked Morrigan", 16777215);
+                                        scr_sfx_play(UnknownEnum.Value_2);
+                                    }
+                                    else
+                                    {
+                                        scr_pop_up_debug5001_create("Morrigan already unlocked", 255);
+                                        scr_sfx_play(UnknownEnum.Value_1);
+                                        fail_shake = true;
+                                        fail_ori_x = obj_button.shift_x + _fail_x;
+                                    }
+                                    
+                                    break;
+                                
+                                case 4:
+                                    if (global.unlock.boss[4] <= -1)
+                                    {
+                                        scr_add_event(35, false);
+                                        scr_pop_up_debug5001_create("Unlocked Lillith & Tower", 16777215);
+                                        scr_sfx_play(UnknownEnum.Value_2);
+                                    }
+                                    else
+                                    {
+                                        scr_pop_up_debug5001_create("Lillith already unlocked" + string(global.unlock.boss[4]), 255);
+                                        scr_sfx_play(UnknownEnum.Value_1);
+                                        fail_shake = true;
+                                        fail_ori_x = obj_button.shift_x + _fail_x;
+                                    }
+                                    
+                                    break;
+                                
+                                case 5:
+                                    if (variable_struct_exists(global.unlock, "frieren"))
+                                    {
+                                        if (global.unlock.frieren == -1)
+                                        {
+                                            scr_add_event(7010, false);
+                                            scr_pop_up_debug5001_create("Unlocked Frieren", 16777215);
+                                            scr_sfx_play(UnknownEnum.Value_2);
+                                        }
+                                        else
+                                        {
+                                            scr_pop_up_debug5001_create("Frieren is already unlocked", 255);
+                                            scr_sfx_play(UnknownEnum.Value_1);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        scr_pop_up_debug5001_create("Frieren mod is NOT currently loaded", 255);
+                                        scr_sfx_play(UnknownEnum.Value_1);
+                                        fail_shake = true;
+                                        fail_ori_x = obj_button.shift_x + _fail_x;
+                                    }
+                                    
+                                    break;
+                                
+                                case 6:
+                                    global.val.stage_info[0].max_lvl++;
+                                    global.val.stage_lvl_sel[0] = min(global.val.stage_lvl_sel[0] + 1, 2);
+                                    scr_set_stage_data(0, global.val.stage_info[0].max_lvl, false);
+                                    scr_check_quest_raid();
+                                    scr_pop_up_debug5001_create("Unlocked Next Village Level", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                                
+                                case 7:
+                                    if (global.val.stage_info[1] == -1)
+                                    {
+                                        scr_set_stage_data(1, 0, false);
+                                        scr_add_event(23, false);
+                                        scr_check_quest_raid();
+                                    }
+                                    else
+                                    {
+                                        global.val.stage_info[1].max_lvl++;
+                                        global.val.stage_lvl_sel[1] = min(global.val.stage_lvl_sel[1] + 1, 2);
+                                        scr_set_stage_data(1, global.val.stage_info[1].max_lvl, false);
+                                        scr_check_quest_raid();
+                                    }
+                                    
+                                    scr_pop_up_debug5001_create("Unlocked Next Mountain Level", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                                
+                                case 8:
+                                    if (global.val.stage_info[2] == -1)
+                                    {
+                                        scr_set_stage_data(2, 0, false);
+                                        scr_add_event(24, false);
+                                        scr_check_quest_raid();
+                                    }
+                                    else
+                                    {
+                                        global.val.stage_info[2].max_lvl++;
+                                        global.val.stage_lvl_sel[2] = min(global.val.stage_lvl_sel[2] + 1, 2);
+                                        scr_set_stage_data(2, global.val.stage_info[2].max_lvl, false);
+                                        scr_check_quest_raid();
+                                    }
+                                    
+                                    scr_pop_up_debug5001_create("Unlocked Next Forest Level", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                                
+                                case 9:
+                                    if (global.val.stage_info[3] == -1)
+                                    {
+                                        scr_set_stage_data(3, 0, false);
+                                        scr_add_event(25, false);
+                                        scr_check_quest_raid();
+                                    }
+                                    else
+                                    {
+                                        global.val.stage_info[3].max_lvl++;
+                                        global.val.stage_lvl_sel[3] = min(global.val.stage_lvl_sel[3] + 1, 2);
+                                        scr_set_stage_data(3, global.val.stage_info[3].max_lvl, false);
+                                        scr_check_quest_raid();
+                                    }
+                                    
+                                    scr_pop_up_debug5001_create("Unlocked Next Castle Level", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                                
+                                case 10:
+                                    global.val.br_unlock = [[[0, 7], [6, 4], [2, 5], [1, 3]], [[1, 5], [0, 6], [4, 2], [3, 7]], [[6, 4], [0, 1], [2, 5], [3, 7]], [[0, 6], [4, 2], [1, 3], [7, 5]]];
+                                    scr_pop_up_debug5001_create("Unlocked breeding tips on unit hover", 16777215);
+                                    break;
+                                
+                                case 11:
+                                    scr_pop_up_debug5001_create("Unlocked all cells (TODO)", 16777215);
+                                    scr_sfx_play(UnknownEnum.Value_2);
+                                    break;
+                            }
+                            
+                            break;
+                    }
+                    
+                    if (_spawn_unit == true)
+                    {
+                        with (obj_button)
+                        {
+                            if (interact_type == 5001 || interact_type == 5003)
+                                instance_destroy();
+                            
+                            if (interact_type == UnknownEnum.Value_54 && button_num != other.button_num)
+                            {
+                                switch_type = false;
+                                image_index = (button_num * 2) + (switch_type * 1);
+                            }
+                        }
+                        
+                        with (source_id)
+                        {
+                            var _num = 5;
+                            var _depth = depth;
+                            
+                            switch (_unit_name)
+                            {
+                                case "goblin":
+                                    scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, 5004, id, false, scr_create_spawn_unit_number_button, -1, scr_draw_debug_button);
+                                    break;
+                                
+                                case "hobgoblin":
+                                    scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, 5005, id, false, scr_create_spawn_unit_number_button, -1, scr_draw_debug_button);
+                                    break;
+                                
+                                case "tentacle":
+                                    scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, 5006, id, false, scr_create_spawn_unit_number_button, -1, scr_draw_debug_button);
+                                    break;
+                                
+                                case "ogre":
+                                    scr_create_button_layout(-38, 12, _depth - 1, _num, 2, 53, 17, 0, spr_button_guide, 5007, id, false, scr_create_spawn_unit_number_button, -1, scr_draw_debug_button);
+                                    break;
+                            }
+                        }
+                    }
+                    
+                    break;
+                
+                case 5004:
+                    if (real(guide_text) == 0.5)
+                    {
+                        scr_pop_up_debug5001_create("How am I supposed to make half a goblin?", 255);
+                        fail_shake = true;
+                        fail_ori_x = obj_button.shift_x - 9;
+                        scr_sfx_play(UnknownEnum.Value_1);
+                    }
+                    else
+                    {
+                        scr_pop_up_debug5001_create("Spawned " + guide_text + " of each goblin", 16777215);
+                        scr_mon_num_edit(0, 0, real(guide_text), true);
+                        scr_mon_num_edit(0, 1, real(guide_text), true);
+                        scr_mon_num_edit(0, 2, real(guide_text), true);
+                        scr_mon_num_edit(0, 3, real(guide_text), true);
+                        scr_sfx_play(UnknownEnum.Value_2);
+                    }
+                    
+                    break;
+                
+                case 5005:
+                    if (real(guide_text) == 0.5)
+                    {
+                        scr_pop_up_debug5001_create("How am I supposed to make half a hobgoblin?", 255);
+                        fail_shake = true;
+                        fail_ori_x = obj_button.shift_x - 9;
+                        scr_sfx_play(UnknownEnum.Value_1);
+                    }
+                    else
+                    {
+                        if (global.val.mon_num[1] == -1)
+                        {
+                            scr_mon_num_edit(1, 0, 1, true);
+                            scr_mon_num_edit(1, 1, 1, true);
+                            scr_mon_num_edit(1, 2, 1, true);
+                            scr_mon_num_edit(1, 3, 1, true);
+                            scr_mon_num_edit(1, 0, real(guide_text) - 1, true);
+                            scr_mon_num_edit(1, 1, real(guide_text) - 1, true);
+                            scr_mon_num_edit(1, 2, real(guide_text) - 1, true);
+                            scr_mon_num_edit(1, 3, real(guide_text) - 1, true);
+                        }
+                        else
+                        {
+                            scr_mon_num_edit(1, 0, real(guide_text), true);
+                            scr_mon_num_edit(1, 1, real(guide_text), true);
+                            scr_mon_num_edit(1, 2, real(guide_text), true);
+                            scr_mon_num_edit(1, 3, real(guide_text), true);
+                        }
+                        
+                        scr_pop_up_debug5001_create("Spawned " + guide_text + " of each hobgoblin", 16777215);
+                        scr_sfx_play(UnknownEnum.Value_2);
+                    }
+                    
+                    break;
+                
+                case 5006:
+                    if (real(guide_text) == 0.5)
+                    {
+                        scr_pop_up_debug5001_create("How am I supposed to make half a tentacle?", 255);
+                        fail_shake = true;
+                        fail_ori_x = obj_button.shift_x - 9;
+                        scr_sfx_play(UnknownEnum.Value_1);
+                    }
+                    else
+                    {
+                        if (global.val.mon_num[1] == -1)
+                        {
+                            scr_mon_num_edit(2, 0, 1, true);
+                            scr_mon_num_edit(2, 1, 1, true);
+                            scr_mon_num_edit(2, 2, 1, true);
+                            scr_mon_num_edit(2, 3, 1, true);
+                            scr_mon_num_edit(2, 0, real(guide_text) - 1, true);
+                            scr_mon_num_edit(2, 1, real(guide_text) - 1, true);
+                            scr_mon_num_edit(2, 2, real(guide_text) - 1, true);
+                            scr_mon_num_edit(2, 3, real(guide_text) - 1, true);
+                        }
+                        else
+                        {
+                            scr_mon_num_edit(2, 0, real(guide_text), true);
+                            scr_mon_num_edit(2, 1, real(guide_text), true);
+                            scr_mon_num_edit(2, 2, real(guide_text), true);
+                            scr_mon_num_edit(2, 3, real(guide_text), true);
+                        }
+                        
+                        scr_pop_up_debug5001_create("Spawned " + guide_text + " of each tentacle", 16777215);
+                        scr_sfx_play(UnknownEnum.Value_2);
+                    }
+                    
+                    break;
+                
+                case 5007:
+                    if (real(guide_text) == 0.5)
+                    {
+                        scr_pop_up_debug5001_create("How am I supposed to make half an ogre?", 255);
+                        fail_shake = true;
+                        fail_ori_x = obj_button.shift_x - 9;
+                        scr_sfx_play(UnknownEnum.Value_1);
+                    }
+                    else
+                    {
+                        if (global.val.mon_num[1] == -1)
+                        {
+                            scr_mon_num_edit(3, 0, 1, true);
+                            scr_mon_num_edit(3, 1, 1, true);
+                            scr_mon_num_edit(3, 2, 1, true);
+                            scr_mon_num_edit(3, 3, 1, true);
+                            scr_mon_num_edit(3, 0, real(guide_text) - 1, true);
+                            scr_mon_num_edit(3, 1, real(guide_text) - 1, true);
+                            scr_mon_num_edit(3, 2, real(guide_text) - 1, true);
+                            scr_mon_num_edit(3, 3, real(guide_text) - 1, true);
+                        }
+                        else
+                        {
+                            scr_mon_num_edit(3, 0, real(guide_text), true);
+                            scr_mon_num_edit(3, 1, real(guide_text), true);
+                            scr_mon_num_edit(3, 2, real(guide_text), true);
+                            scr_mon_num_edit(3, 3, real(guide_text), true);
+                        }
+                        
+                        scr_pop_up_debug5001_create("Spawned " + guide_text + " of each ogre", 16777215);
+                        scr_sfx_play(UnknownEnum.Value_2);
+                    }
+                    
+                    break;
+                
+                case 5100:
+                    scr_sfx_play(UnknownEnum.Value_2);
+                    scr_pop_up_debug5001_create("Refreshing Stage Data", 16777215);
+                    scr_set_stage_data(obj_np.obj_raid.raid_data.stage, global.val.stage_lvl_sel[obj_np.obj_raid.raid_data.stage], false);
+                    break;
+                
+                case 5101:
+                    scr_sfx_play(UnknownEnum.Value_2);
+                    scr_pop_up_debug5001_create("Booped the Merchant", 16777215);
+                    var _raid_data = obj_np.obj_raid.raid_data;
+                    
+                    with (obj_np.obj_raid)
+                        scr_choose_shop_item();
+                    
+                    break;
+                
+                case 5102:
+                    scr_sfx_play(UnknownEnum.Value_2);
+                    scr_pop_up_debug5001_create("Refreshing Slave Trader", 16777215);
+                    var _raid_data = obj_np.obj_raid.raid_data;
+                    
+                    with (obj_np.obj_raid)
+                        scr_choose_trade_item();
+                    
+                    break;
+                
+                case 5003:
+                    var _slot_id = source_id.source_id;
+                    scr_sfx_play(UnknownEnum.Value_2);
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            if ((global.w_spd - 0.5) <= 0)
+                                global.w_spd = 0;
+                            else
+                                global.w_spd -= 0.5;
+                            
+                            break;
+                        
+                        case 1:
+                            if ((global.w_spd + 0.5) >= 10)
+                                global.w_spd = 10;
+                            else
+                                global.w_spd += 0.5;
+                            
+                            break;
+                        
+                        case 2:
+                            if ((global.val.cart_spd - 0.5) <= 0)
+                                global.val.cart_spd = 0.5;
+                            else
+                                global.val.cart_spd -= 0.5;
+                            
+                            break;
+                        
+                        case 3:
+                            if ((global.val.cart_spd + 0.5) >= 10)
+                            {
+                                global.val.cart_spd = 10;
+                                break;
+                            }
+                            
+                            global.val.cart_spd += 0.5;
+                    }
+                    
+                    break;
+                
+                case 5200:
+                    var _slot_id = source_id.source_id;
+                    var _floor = _slot_id.slot_data.slot_floor;
+                    var _pillar_num = 0;
+                    
+                    with (_slot_id)
+                    {
+                        var _list_check = global.slot_list[_floor];
+                        
+                        for (var i = 0; i < ds_list_size(global.slot_list[_floor]); i++)
+                        {
+                            if (variable_struct_exists(ds_list_find_value(_list_check, i).slot_data, "between_type"))
+                                _pillar_num++;
+                        }
+                        
+                        scr_pop_up_debug5001_create(string(_slot_id.slot_data.between_type), 255);
+                        
+                        if (_pillar_num == 1)
+                        {
+                            scr_pop_up_debug5001_create("Floor must have at least one pillar", 255);
+                        }
+                        else
+                        {
+                            if (array_length(slot_data.prop) > 0)
+                            {
+                                scr_pop_up_debug5001_create("Pillar detected with props", 16777215);
+                                scr_destroy_all_slot_prop();
+                            }
+                            else
+                            {
+                                scr_pop_up_debug5001_create("Pillar detected without props", 16777215);
+                            }
+                            
+                            var _list = global.slot_list[_floor];
+                            var _slot_pos = ds_list_find_index(_list, id);
+                            var _between_id = ds_list_find_value(_list, _slot_pos);
+                            var _prev_slot_id = ds_list_find_value(_list, _slot_pos - 1);
+                            var _diff = image_xscale + 2;
+                            instance_destroy();
+                            ds_list_delete(global.slot_list[_floor], _slot_pos);
+                            global.slot_x[_floor] -= _diff;
+                            scr_shift_slot(_prev_slot_id, _diff * -1, _floor);
+                            var _check_slot_id = ds_list_find_value(_list, _slot_pos - 1);
+                        }
+                    }
+                    
+                    scr_pop_up_debug5001_create("Removing pillar", 16777215);
+                    scr_sfx_play(UnknownEnum.Value_2);
+                    
+                    with (source_id)
+                        instance_destroy();
+                    
+                    break;
+                
+                case UnknownEnum.Value_55:
+                    var _text;
+                    
+                    switch (guide_group)
+                    {
+                        case 0:
+                            switch (button_num)
+                            {
+                                case 0:
+                                    _text = scr_guide_controls;
+                                    break;
+                                
+                                case 1:
+                                    _text = scr_guide_quest;
+                                    break;
+                                
+                                case 2:
+                                    _text = scr_guide_prison;
+                                    break;
+                                
+                                case 3:
+                                    _text = scr_guide_birth;
+                                    break;
+                                
+                                case 4:
+                                    _text = scr_guide_clean;
+                                    break;
+                                
+                                case 5:
+                                    _text = scr_guide_ration;
+                                    break;
+                                
+                                case 6:
+                                    _text = scr_guide_mood;
+                                    break;
+                                
+                                case 7:
+                                    _text = scr_guide_milk;
+                                    break;
+                                
+                                case 8:
+                                    _text = scr_guide_cell_stat;
+                                    break;
+                                
+                                case 9:
+                                    _text = scr_guide_hot_keys;
+                                    break;
+                                
+                                case 10:
+                                    _text = scr_guide_demolish;
+                                    break;
+                                
+                                case 11:
+                                    _text = scr_guide_tent_cell;
+                                    break;
+                            }
+                            
+                            break;
+                        
+                        case 1:
+                            switch (button_num)
+                            {
+                                case 0:
+                                    _text = scr_guide_raid;
+                                    break;
+                                
+                                case 1:
+                                    _text = scr_guide_trader;
+                                    break;
+                                
+                                case 2:
+                                    _text = scr_guide_shop;
+                                    break;
+                                
+                                case 3:
+                                    _text = scr_guide_prints;
+                                    break;
+                                
+                                case 4:
+                                    _text = scr_guide_level;
+                                    break;
+                                
+                                case 5:
+                                    _text = scr_guide_skill;
+                                    break;
+                                
+                                case 6:
+                                    _text = scr_guide_capture;
+                                    break;
+                                
+                                case 7:
+                                    _text = scr_guide_casualty;
+                                    break;
+                            }
+                            
+                            break;
+                        
+                        case 2:
+                            guide_new = false;
+                            
+                            switch (button_num)
+                            {
+                                case 0:
+                                    _text = scr_guide_display;
+                                    break;
+                                
+                                case 1:
+                                    _text = scr_guide_birth_2;
+                                    break;
+                                
+                                case 2:
+                                    _text = scr_guide_drink;
+                                    break;
+                                
+                                case 3:
+                                    _text = scr_guide_carry;
+                                    break;
+                                
+                                case 4:
+                                    _text = scr_guide_recover;
+                                    break;
+                                
+                                case 5:
+                                    _text = scr_guide_milk_2;
+                                    break;
+                                
+                                case 6:
+                                    _text = scr_guide_o_carry;
+                                    break;
+                                
+                                case 7:
+                                    _text = scr_guide_clone;
+                                    break;
+                                
+                                case 8:
+                                    _text = scr_guide_f_shrine;
+                                    break;
+                                
+                                case 9:
+                                    _text = scr_guide_c_shrine;
+                                    break;
+                                
+                                case 10:
+                                    _text = scr_guide_v_shrine;
+                                    break;
+                                
+                                case 11:
+                                    _text = scr_guide_l_shrine;
+                                    break;
+                            }
+                            
+                            break;
+                    }
+                    
+                    var _text_data = {};
+                    _text_data.text_type = _text;
+                    _text_data.event_after = -1;
+                    _text_data.noti_type = -1;
+                    scr_create_textbox(_text_data, -1, obj_np);
+                    break;
+                
+                case UnknownEnum.Value_32:
+                    with (obj_button)
+                    {
+                        if (interact_type == 5101 || interact_type == 5102)
+                            instance_destroy();
+                    }
+                    
+                    switch (button_num)
+                    {
+                        case UnknownEnum.Value_4:
+                            if (alpha_window == -1)
+                            {
+                                alpha_window = scr_create_alpha_window();
+                            }
+                            else
+                            {
+                                with (alpha_window)
+                                    instance_destroy();
+                                
+                                alpha_window = -1;
+                                
+                                with (obj_window)
+                                {
+                                    if (interact_type == UnknownEnum.Value_12)
+                                        instance_destroy();
+                                }
+                                
+                                with (obj_button)
+                                {
+                                    if (interact_type == UnknownEnum.Value_56)
+                                        instance_destroy();
+                                }
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_3:
+                            global.val.show_head = !global.val.show_head;
+                            
+                            if (!global.val.show_head)
+                            {
+                                with (obj_button)
+                                {
+                                    if (interact_type == UnknownEnum.Value_20 && drag_type == UnknownEnum.Value_2 && follow)
+                                        instance_destroy();
+                                }
+                            }
+                            else
+                            {
+                                scr_create_slot_head(true, -1);
+                            }
+                            
+                            break;
+                        
+                        case UnknownEnum.Value_0:
+                            var _raid = obj_np.obj_raid;
+                            
+                            with (_raid)
+                                trans = true;
+                            
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_57:
+                    switch (button_num)
+                    {
+                        case 0:
+                            with (obj_window)
+                            {
+                                if (interact_type == UnknownEnum.Value_5)
+                                {
+                                    with (textbox_id)
+                                    {
+                                        draw_char = 0;
+                                        last_blip = -1;
+                                        page = max(0, page - 1);
+                                        source_id.name_text = text_name[page];
+                                        source_id.portrait_index = text_spr[page];
+                                    }
+                                }
+                            }
+                            
+                            break;
+                        
+                        case 1:
+                            with (obj_window)
+                            {
+                                if (interact_type == UnknownEnum.Value_5)
+                                {
+                                    scr_end_textbox(textbox_id);
+                                    break;
+                                }
+                            }
+                            
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_33:
+                    var _noti = ds_list_find_value(global.noti_list, 0);
+                    scr_create_textbox(_noti, -1, obj_np);
+                    scr_sfx_play(UnknownEnum.Value_3);
+                    instance_destroy();
+                    break;
+                
+                case UnknownEnum.Value_29:
+                    switch (button_num)
+                    {
+                        case 0:
+                            if (--source_id.num < 0)
+                                source_id.num = source_id.info.max_num;
+                            
+                            if (source_id.source_id.interact_type == UnknownEnum.Value_22 && instance_exists(obj_window))
+                            {
+                                var _window_num = source_id;
+                                
+                                with (obj_np.obj_raid)
+                                    scr_calculate_group_stat(_window_num);
+                            }
+                            
+                            break;
+                        
+                        case 1:
+                            if (++source_id.num > source_id.info.max_num)
+                                source_id.num = 0;
+                            
+                            if (source_id.source_id.interact_type == UnknownEnum.Value_22 && instance_exists(obj_window))
+                            {
+                                var _window_num = source_id;
+                                
+                                with (obj_np.obj_raid)
+                                    scr_calculate_group_stat(_window_num);
+                            }
+                            
+                            break;
+                        
+                        case 3:
+                            if (source_id.num == source_id.info.max_num)
+                                source_id.num = 0;
+                            else
+                                source_id.num = min(source_id.info.max_num, source_id.num + 10);
+                            
+                            if (source_id.source_id.interact_type == UnknownEnum.Value_22 && instance_exists(obj_window))
+                            {
+                                var _window_num = source_id;
+                                
+                                with (obj_np.obj_raid)
+                                    scr_calculate_group_stat(_window_num);
+                            }
+                            
+                            break;
+                        
+                        case 2:
+                            if (source_id.num == 0)
+                                source_id.num = source_id.info.max_num;
+                            else
+                                source_id.num = max(0, source_id.num - 10);
+                            
+                            if (source_id.source_id.interact_type == UnknownEnum.Value_22 && instance_exists(obj_window))
+                            {
+                                var _window_num = source_id;
+                                
+                                with (obj_np.obj_raid)
+                                    scr_calculate_group_stat(_window_num);
+                            }
+                            
+                            break;
+                        
+                        case 4:
+                            with (source_id)
+                                script_execute(scr_window_enter);
+                            
+                            break;
+                        
+                        case 5:
+                            with (source_id)
+                            {
+                                with (obj_button)
+                                {
+                                    if (gui && interact_type == UnknownEnum.Value_21 && drag_type == UnknownEnum.Value_3)
+                                        raid_sel = false;
+                                }
+                                
+                                if (source_id.interact_type == UnknownEnum.Value_22)
+                                    scr_set_raid_group(true);
+                                
+                                instance_destroy();
+                            }
+                            
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_38:
+                    scr_sort_item_button();
+                    break;
+                
+                case UnknownEnum.Value_41:
+                    with (obj_np.obj_raid)
+                    {
+                        raid_data.ff = true;
+                        raid_data.raid_state = UnknownEnum.Value_1;
+                        raid_data.max_time = round((global.base_raid_time[raid_data.stage] * 2) / (global.val.cart_spd * raid_data.haste));
+                        raid_data.time_left = raid_data.max_time;
+                        
+                        if (ap_save != -1)
+                        {
+                            raid_data.ap[0] = ap_save[0];
+                            raid_data.ap[1] = ap_save[1];
+                            ap_save = -1;
+                        }
+                    }
+                    
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_41 || interact_type == UnknownEnum.Value_43 || interact_type == UnknownEnum.Value_44 || interact_type == UnknownEnum.Value_45 || interact_type == UnknownEnum.Value_46)
+                            instance_destroy();
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_43:
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_30)
+                            instance_destroy();
+                    }
+                    
+                    if (obj_np.obj_raid.raid_data.stage != other.button_num)
+                    {
+                        obj_np.obj_raid.raid_data.stage = other.button_num;
+                        scr_create_button_layout(-13, 14, depth - 5, 2, 2, 27, 0, 0, spr_button_arrow, UnknownEnum.Value_30, id, false, scr_create_stage_sel_arrow, -1, scr_draw_hover_button);
+                    }
+                    else
+                    {
+                        obj_np.obj_raid.raid_data.stage = -1;
+                    }
+                    
+                    image_index = button_num;
+                    break;
+                
+                case UnknownEnum.Value_44:
+                    with (obj_np.obj_raid)
+                    {
+                        raid_data.ff = true;
+                        raid_data.raid_state = UnknownEnum.Value_3;
+                    }
+                    
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_41 || interact_type == UnknownEnum.Value_43 || interact_type == UnknownEnum.Value_44 || interact_type == UnknownEnum.Value_45)
+                            instance_destroy();
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_58:
+                    var _y = 0;
+                    
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _text = "Sell all 0 units in prison?";
+                            break;
+                        
+                        case 1:
+                            var _text = "Sell all units in prison?";
+                            _y = -17;
+                            break;
+                        
+                        case 2:
+                            var _text = "Sell all units in cage?";
+                            _y = -34;
+                            break;
+                    }
+                    
+                    scr_create_window_sure_sel(x, (y - 30) + _y, id, depth, true, spr_sure_window_2, scr_window_sell_unit_enter, -1, scr_draw_sure_window_trade);
+                    break;
+                
+                case UnknownEnum.Value_59:
+                    var _info = {};
+                    _info.save_num = -1;
+                    _info.max_num = 999;
+                    num_window = scr_create_window_num_sel(x, y - 35, id, depth - 10, true, _info, -1, scr_trade_food_enter, -1);
+                    break;
+                
+                case UnknownEnum.Value_45:
+                    with (obj_np.obj_raid)
+                    {
+                        raid_data.ff = true;
+                        raid_data.raid_state = UnknownEnum.Value_4;
+                    }
+                    
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_41 || interact_type == UnknownEnum.Value_43 || interact_type == UnknownEnum.Value_44 || interact_type == UnknownEnum.Value_45)
+                            instance_destroy();
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_47:
+                    switch (button_num)
+                    {
+                        case 0:
+                            var _raid_num = ds_list_size(global.raid_inv_list);
+                            
+                            for (var i = 0; i < _raid_num; i++)
+                            {
+                                var _raid_item = ds_list_find_value(global.raid_inv_list, i);
+                                scr_add_item(_raid_item);
+                            }
+                            
+                            ds_list_clear(global.raid_inv_list);
+                            break;
+                        
+                        case 1:
+                            var _empty_num = 0;
+                            var _unit_num = 0;
+                            var _cage_num = array_length(global.val.cage);
+                            
+                            for (var i = 0; i < _cage_num; i++)
+                            {
+                                if (global.val.cage[i] != -1)
+                                    _unit_num++;
+                            }
+                            
+                            if (_unit_num > 0)
+                            {
+                                var _list_num = ds_list_size(global.unit_list);
+                                
+                                for (var i = 0; i < _list_num; i++)
+                                {
+                                    if (ds_list_find_value(global.unit_list, i) == -1)
+                                        _empty_num++;
+                                }
+                                
+                                if (_empty_num >= _unit_num)
+                                {
+                                    for (var i = 0; i < array_length(global.val.cage); i++)
+                                    {
+                                        if (global.val.cage[i] != -1)
+                                        {
+                                            for (var ii = 0; ii < _list_num; ii++)
+                                            {
+                                                if (ds_list_find_value(global.unit_list, ii) == -1)
+                                                {
+                                                    ds_list_set(global.unit_list, ii, global.val.cage[i]);
+                                                    global.val.cage[i] = -1;
+                                                    ii = _list_num;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    scr_reset_unit_window(-1);
+                                    
+                                    with (obj_button)
+                                    {
+                                        if (interact_type == UnknownEnum.Value_20 && drag_type == UnknownEnum.Value_5)
+                                            instance_destroy();
+                                    }
+                                }
+                            }
+                            
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_39:
+                    obj_np.obj_raid.raid_data.cat = button_num;
+                    
+                    with (obj_button)
+                    {
+                        switch (interact_type)
+                        {
+                            case UnknownEnum.Value_21:
+                                instance_destroy();
+                                break;
+                            
+                            case UnknownEnum.Value_39:
+                                if (id == other.id)
+                                {
+                                    switch_type = true;
+                                    image_index = 1;
+                                }
+                                else
+                                {
+                                    switch_type = false;
+                                    image_index = 0;
+                                }
+                                
+                                break;
+                        }
+                    }
+                    
+                    if (instance_exists(obj_window))
+                    {
+                        with (obj_window)
+                        {
+                            if (interact_type == UnknownEnum.Value_10)
+                                instance_destroy();
+                        }
+                    }
+                    
+                    var _x = 61;
+                    var _y = 57;
+                    var _num = button_num;
+                    
+                    with (obj_np.obj_raid)
+                        scr_reset_mon_cat_head(_x, _y, _num);
+                    
+                    break;
+                
+                case UnknownEnum.Value_35:
+                    with (obj_button)
+                    {
+                        if (interact_type == other.interact_type)
+                        {
+                            if (id == other.id)
+                            {
+                                switch_type = false;
+                                image_index = button_num * 2;
+                            }
+                            else
+                            {
+                                switch_type = true;
+                                image_index = (button_num * 2) + 1;
+                            }
+                        }
+                    }
+                    
+                    global.w_spd = button_num;
+                    break;
+                
+                case UnknownEnum.Value_30:
+                    var _stage = source_id.button_num;
+                    var _max = min(2, global.val.stage_info[_stage].max_lvl);
+                    var _val;
+                    
+                    if (button_num == 0)
+                        _val = -1;
+                    else
+                        _val = 1;
+                    
+                    global.val.stage_lvl_sel[_stage] = clamp(global.val.stage_lvl_sel[_stage] + _val, 0, _max);
+                    break;
+                
+                case UnknownEnum.Value_46:
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_46 || interact_type == UnknownEnum.Value_48 || interact_type == UnknownEnum.Value_49 || interact_type == UnknownEnum.Value_50 || interact_type == UnknownEnum.Value_58 || interact_type == UnknownEnum.Value_59 || interact_type == 5101 || interact_type == 5102)
+                            instance_destroy();
+                    }
+                    
+                    with (obj_window)
+                    {
+                        if (interact_type == UnknownEnum.Value_12)
+                            instance_destroy();
+                    }
+                    
+                    with (obj_np.obj_raid)
+                    {
+                        raid_data.ff = true;
+                        raid_data.raid_state = UnknownEnum.Value_0;
+                        scr_create_map_buttons();
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_48:
+                    var _unit_data;
+                    
+                    with (obj_np.obj_raid)
+                    {
+                        _unit_data = raid_data.trade_unit[other.button_num];
+                        raid_data.trade_unit[other.button_num] = -1;
+                    }
+                    
+                    var _slot_pos = -1;
+                    var _num = ds_list_size(global.unit_list);
+                    
+                    for (var i = 0; i < _num; i++)
+                    {
+                        if (ds_list_find_value(global.unit_list, i) == -1)
+                        {
+                            _slot_pos = i;
+                            i = _num;
+                        }
+                    }
+                    
+                    scr_insert_unit_to_list(_unit_data, _slot_pos, -1);
+                    scr_reset_unit_window(-1);
+                    
+                    if (global.unlock.boss[UnknownEnum.Value_5] == -1 && _unit_data.class == UnknownEnum.Value_13)
+                    {
+                        global.unlock.boss[UnknownEnum.Value_5] = 1;
+                        scr_check_steam_achievement(UnknownEnum.Value_6);
+                    }
+                    
+                    instance_destroy();
+                    break;
+                
+                case UnknownEnum.Value_49:
+                    scr_add_item(item_data);
+                    var _item_type = item_data.item_type;
+                    var _num = item_data.num;
+                    var _lvl = item_data.lvl;
+                    var _num_1 = array_length(global.val.shop_item);
+                    
+                    for (var i = 0; i < _num_1; i++)
+                    {
+                        var _num_2 = array_length(global.val.shop_item[i]);
+                        
+                        for (var ii = 0; ii < _num_2; ii++)
+                        {
+                            var _item_c = global.val.shop_item[i][ii];
+                            
+                            if (_item_type == _item_c[0] && _num == _item_c[1] && _lvl == _item_c[2])
+                            {
+                                array_delete(global.val.shop_item[i], ii, 1);
+                                i = _num_1;
+                                ii = _num_2;
+                            }
+                        }
+                    }
+                    
+                    obj_np.obj_raid.raid_data.shop_item[button_num] = -1;
+                    instance_destroy();
+                    break;
+                
+                case UnknownEnum.Value_50:
+                    switch (button_num)
+                    {
+                        case 0:
+                            global.val.floor++;
+                            array_push(global.slot_x, -1);
+                            array_push(global.slot_list, ds_list_create());
+                            var _start_id = scr_create_slot(UnknownEnum.Value_4, global.val.floor, 0, false);
+                            
+                            with (_start_id)
+                                scr_create_slot(UnknownEnum.Value_3, global.val.floor, 1, true);
+                            
+                            break;
+                        
+                        case 1:
+                            var _target;
+                            
+                            switch (ds_list_size(global.unit_list))
+                            {
+                                case 5:
+                                    _target = 11;
+                                    break;
+                                
+                                case 11:
+                                    _target = 22;
+                                    break;
+                            }
+                            
+                            var i = ds_list_size(global.unit_list);
+                            
+                            while (i < _target)
+                            {
+                                ds_list_add(global.unit_list, -1);
+                                i++;
+                            }
+                            
+                            var _button_id = -1;
+                            
+                            with (obj_button)
+                            {
+                                if (interact_type == UnknownEnum.Value_19)
+                                    _button_id = id;
+                            }
+                            
+                            if (_button_id != -1)
+                            {
+                                with (_button_id)
+                                {
+                                    if (child_window != -1)
+                                    {
+                                        with (child_window)
+                                            instance_destroy();
+                                        
+                                        child_window = -1;
+                                        y = 270;
+                                        scr_create_unit_window_list(id, x, y);
+                                    }
+                                }
+                            }
+                            
+                            break;
+                        
+                        case 2:
+                            global.val.add_range++;
+                            break;
+                        
+                        case 3:
+                            var _max = array_length(global.max_troop);
+                            global.val.troop_size = min(_max - 1, global.val.troop_size + 1);
+                            break;
+                        
+                        case 4:
+                            array_push(global.val.cage, -1);
+                            break;
+                        
+                        case 5:
+                            global.val.cart_spd += 0.1;
+                            break;
+                    }
+                    
+                    var _x = x;
+                    var _y = y;
+                    var _depth = depth;
+                    var _num = button_num;
+                    
+                    with (obj_np.obj_raid)
+                        scr_create_button(_x, _y, _depth, spr_button_trade, UnknownEnum.Value_50, id, scr_create_shop_upgrade_button, -1, scr_draw_raid_shop_button, _num, _num);
+                    
+                    instance_destroy();
+                    break;
+                
+                case UnknownEnum.Value_51:
+                    switch (button_num)
+                    {
+                        case 0:
+                            global.click_lock = true;
+                            obj_np.load_state = UnknownEnum.Value_6;
+                            break;
+                        
+                        case 1:
+                            with (obj_button)
+                                instance_destroy();
+                            
+                            scr_create_menu_load_page();
+                            obj_menu.title = false;
+                            obj_menu.bg = false;
+                            break;
+                        
+                        case 2:
+                            game_end();
+                            break;
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_52:
+                    var _exit = false;
+                    
+                    if (button_num == 2)
+                    {
+                        with (obj_window)
+                            instance_destroy();
+                        
+                        with (obj_button)
+                            instance_destroy();
+                        
+                        with (obj_np)
+                        {
+                            load_state = UnknownEnum.Value_4;
+                            obj_menu.title = true;
+                            obj_menu.bg = true;
+                        }
+                        
+                        scr_sfx_play(UnknownEnum.Value_1);
+                    }
+                    else
+                    {
+                        switch (button_num)
+                        {
+                            case 0:
+                                if (source_id.load_data.ver > 0.43 && source_id.load_data.ver < 1.07)
+                                {
+                                    scr_sfx_play(UnknownEnum.Value_1);
+                                }
+                                else
+                                {
+                                    scr_sfx_play(UnknownEnum.Value_0);
+                                    global.load_file = source_id.button_num;
+                                    global.click_lock = true;
+                                    obj_np.load_state = UnknownEnum.Value_6;
+                                }
+                                
+                                break;
+                            
+                            case 1:
+                                with (obj_window)
+                                {
+                                    if (interact_type == UnknownEnum.Value_12)
+                                        instance_destroy();
+                                }
+                                
+                                with (obj_button)
+                                {
+                                    if (interact_type == UnknownEnum.Value_56)
+                                        instance_destroy();
+                                }
+                                
+                                var _text = "Delete Save File?";
+                                scr_create_window_sure_sel(x + 64, y - 5, id, depth, true, spr_sure_window, scr_window_sure_save_delete_enter, _text, scr_draw_sure_window);
+                                scr_sfx_play(UnknownEnum.Value_14);
+                                break;
+                        }
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_53:
+                    with (obj_window)
+                    {
+                        if (interact_type == UnknownEnum.Value_12)
+                            instance_destroy();
+                    }
+                    
+                    with (obj_button)
+                    {
+                        if (interact_type == UnknownEnum.Value_56)
+                            instance_destroy();
+                    }
+                    
+                    var _load_type;
+                    
+                    switch (button_pos + 1)
+                    {
+                        case 1:
+                            _load_type = "save_file_1.json";
+                            break;
+                        
+                        case 2:
+                            _load_type = "save_file_2.json";
+                            break;
+                        
+                        case 3:
+                            _load_type = "save_file_3.json";
+                            break;
+                    }
+                    
+                    if (!file_exists(_load_type))
+                    {
+                        scr_sfx_play(UnknownEnum.Value_21);
+                        scr_save_game(button_pos + 1);
+                        load_data = scr_set_save_date(button_pos);
+                    }
+                    else
+                    {
+                        scr_sfx_play(UnknownEnum.Value_0);
+                        var _text = "Overwrite Save File?";
+                        scr_create_window_sure_sel(x - 64, y - 1, id, depth, true, spr_sure_window, scr_window_save_overwrite_enter, _text, scr_draw_sure_window);
+                    }
+                    
+                    break;
+                
+                case UnknownEnum.Value_56:
+                    source_id.enter = !button_num;
+                    
+                    with (source_id)
+                        script_execute(scr_window_enter);
+                    
+                    break;
+                
+                case UnknownEnum.Value_62:
+                    ds_list_clear(global.front_row_save);
+                    ds_list_clear(global.back_row_save);
+                    var _save_info = {};
+                    
+                    for (var i = 0; i < ds_list_size(global.front_row); i++)
+                    {
+                        _save_info = {};
+                        var _info = ds_list_find_value(global.front_row, i);
+                        _save_info.mon_type = _info.unit_data.mon_type;
+                        _save_info.class = _info.unit_data.class;
+                        _save_info.num = _info.num;
+                        ds_list_add(global.front_row_save, _save_info);
+                    }
+                    
+                    for (var i = 0; i < ds_list_size(global.back_row); i++)
+                    {
+                        _save_info = {};
+                        var _info = ds_list_find_value(global.back_row, i);
+                        _save_info.mon_type = _info.unit_data.mon_type;
+                        _save_info.class = _info.unit_data.class;
+                        _save_info.num = _info.num;
+                        ds_list_add(global.back_row_save, _save_info);
+                    }
+                    
+                    scr_pop_up_create(UnknownEnum.Value_34);
+                    break;
+                
+                case UnknownEnum.Value_63:
+                    var _pop = false;
+                    
+                    for (var i = 0; i < ds_list_size(global.front_row); i++)
+                    {
+                        var _info = ds_list_find_value(global.front_row, i);
+                        scr_mon_num_edit(_info.unit_data.mon_type, _info.unit_data.class, _info.num, false);
+                    }
+                    
+                    ds_list_clear(global.front_row);
+                    
+                    for (var i = 0; i < ds_list_size(global.back_row); i++)
+                    {
+                        var _info = ds_list_find_value(global.back_row, i);
+                        scr_mon_num_edit(_info.unit_data.mon_type, _info.unit_data.class, _info.num, false);
+                    }
+                    
+                    ds_list_clear(global.back_row);
+                    
+                    for (var i = 0; i < ds_list_size(global.front_row_save); i++)
+                    {
+                        var _info = ds_list_find_value(global.front_row_save, i);
+                        var _ar = scr_mon_type_construct(_info.mon_type);
+                        var _new_val = _info.num;
+                        
+                        if (_ar.num[_info.class] > 0)
+                        {
+                            if (_new_val >= _ar.num[_info.class])
+                            {
+                                _new_val = _ar.num[_info.class];
+                                
+                                if (_info.mon_type == UnknownEnum.Value_0 && (global.val.mon_num[UnknownEnum.Value_0] - _new_val) <= 0)
+                                {
+                                    _new_val--;
+                                    _pop = true;
+                                }
+                            }
+                            
+                            var _new_info = 
+                            {
+                                num: _new_val,
+                                mon_type: UnknownEnum.Value_21,
+                                unit_data: 
+                                {
+                                    mon_type: _info.mon_type,
+                                    class: _info.class,
+                                    lvl: _ar.lvl[_info.class]
+                                }
+                            };
+                            ds_list_add(global.front_row, _new_info);
+                            scr_mon_num_edit(_new_info.unit_data.mon_type, _new_info.unit_data.class, _new_info.num * -1, false);
+                        }
+                    }
+                    
+                    for (var i = 0; i < ds_list_size(global.back_row_save); i++)
+                    {
+                        var _info = ds_list_find_value(global.back_row_save, i);
+                        var _ar = scr_mon_type_construct(_info.mon_type);
+                        var _new_val = _info.num;
+                        
+                        if (_ar.num[_info.class] > 0)
+                        {
+                            if (_new_val >= _ar.num[_info.class])
+                            {
+                                _new_val = _ar.num[_info.class];
+                                
+                                if (_info.mon_type == UnknownEnum.Value_0 && (global.val.mon_num[UnknownEnum.Value_0] - _new_val) <= 0)
+                                {
+                                    _new_val--;
+                                    _pop = true;
+                                }
+                            }
+                            
+                            var _new_info = 
+                            {
+                                num: _new_val,
+                                mon_type: UnknownEnum.Value_21,
+                                unit_data: 
+                                {
+                                    mon_type: _info.mon_type,
+                                    class: _info.class,
+                                    lvl: _ar.lvl[_info.class]
+                                }
+                            };
+                            ds_list_add(global.back_row, _new_info);
+                            scr_mon_num_edit(_new_info.unit_data.mon_type, _new_info.unit_data.class, _new_info.num * -1, false);
+                        }
+                    }
+                    
+                    if (_pop)
+                        scr_pop_up_create(UnknownEnum.Value_15);
+                    
+                    scr_set_raid_group(true);
+                    scr_pop_up_create(UnknownEnum.Value_35);
+                    break;
+            }
+        }
+    }
+    
+    scr_button_fail_shake();
+}
+
+enum UnknownEnum
+{
+    Value_0,
+    Value_1,
+    Value_2,
+    Value_3,
+    Value_4,
+    Value_5,
+    Value_6,
+    Value_7,
+    Value_8,
+    Value_9,
+    Value_10,
+    Value_11,
+    Value_12,
+    Value_13,
+    Value_14,
+    Value_15,
+    Value_16,
+    Value_17,
+    Value_19 = 19,
+    Value_20,
+    Value_21,
+    Value_22,
+    Value_23,
+    Value_26 = 26,
+    Value_27,
+    Value_29 = 29,
+    Value_30,
+    Value_31,
+    Value_32,
+    Value_33,
+    Value_34,
+    Value_35,
+    Value_36,
+    Value_37,
+    Value_38,
+    Value_39,
+    Value_40,
+    Value_41,
+    Value_43 = 43,
+    Value_44,
+    Value_45,
+    Value_46,
+    Value_47,
+    Value_48,
+    Value_49,
+    Value_50,
+    Value_51,
+    Value_52,
+    Value_53,
+    Value_54,
+    Value_55,
+    Value_56,
+    Value_57,
+    Value_58,
+    Value_59,
+    Value_60,
+    Value_61,
+    Value_62,
+    Value_63
+}

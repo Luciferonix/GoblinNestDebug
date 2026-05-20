@@ -1,0 +1,760 @@
+function scr_create_alpha_window()
+{
+    var _window = instance_create_depth(x, y, -2200, obj_window);
+    
+    with (_window)
+    {
+        if (!global.val.ui_place)
+        {
+            x += -30;
+            y += 12;
+        }
+        else
+        {
+            x += 114;
+            y += 13;
+        }
+        
+        interact_type = UnknownEnum.Value_9;
+        source_id = other.id;
+        scr_window_draw = scr_draw_alpha_window;
+        gui = true;
+        scr_create_button_layout(11, 11, depth - 1, 12, 2, 23, 12, 0, spr_button_arrow, UnknownEnum.Value_31, id, false, scr_create_alpha_set_button, -1, scr_draw_hover_button);
+        scr_create_button_layout(-111, 20, depth - 1, 3, 1, 1, 34, 0, spr_button_load, UnknownEnum.Value_53, id, false, scr_create_save_button, -1, scr_draw_save_data_button);
+        scr_create_button(25, 85, depth - 1, spr_button_oval, UnknownEnum.Value_31, id, scr_create_alpha_set_button, -1, scr_draw_hover_button, 12, 10);
+        scr_create_button(-44, 70, depth - 1, spr_button_oval, 5010, id, scr_create_option_button, -1, scr_draw_hover_button, 5010, 11);
+        scr_create_button(25, 98, depth - 1, spr_button_oval, UnknownEnum.Value_31, id, scr_create_alpha_set_button, -1, scr_draw_hover_button, 13, 10);
+        scr_create_button(-3, 111, depth - 1, spr_button_guide_icon, UnknownEnum.Value_31, id, scr_create_option_guide, -1, scr_draw_hover_guide_button, 14, 11);
+        scr_create_button(30, 112, depth - 1, spr_button_oval, UnknownEnum.Value_31, id, scr_create_option_button, -1, scr_draw_hover_button, 15, 11);
+    }
+    
+    return _window;
+}
+
+function scr_draw_alpha_window()
+{
+    draw_sprite_ext(spr_option_window, image_index, x, y, 1, 1, image_angle, image_blend, image_alpha);
+    var _x = x - 32;
+    var _y = y + 8;
+    var _width = 55;
+    draw_set_color(c_white);
+    draw_set_halign(fa_left);
+    draw_text(_x, _y, "MON TYPE");
+    draw_text(_x, _y + 12, "OPACITY");
+    draw_text(_x, _y + 24, "PROP TYPE");
+    draw_text(_x, _y + 36, "OPACITY");
+    draw_text(_x, _y + 49, "SFX");
+    draw_text(_x, _y + 61, "BGM");
+    draw_text(_x, _y + 74, "UI PLACEMENT");
+    draw_text(_x, _y + 87, "FULLSCREEN");
+    draw_text(_x, _y + 100, "GUIDE");
+    draw_text(_x + 43, _y + 100, "EXIT");
+    draw_set_halign(fa_center);
+    draw_text(_x + _width, _y, string(global.val.alpha_type + 1));
+    draw_text(_x + _width, _y + 12, string(round(global.val.mon_alpha * 100)) + "%");
+    draw_text(_x + _width, _y + 24, string(global.val.crate_alpha_type + 1));
+    draw_text(_x + _width, _y + 36, string(round(global.val.crate_alpha * 100)) + "%");
+    draw_text(_x + _width, _y + 49, string(round(global.val.sfx_vol * 100)) + "%");
+    draw_text(_x + _width, _y + 61, string(round(global.val.bgm_vol * 100)) + "%");
+    _x = x - 74;
+    _y = y + 6;
+    var _height = 34;
+    draw_text(_x, _y, "SAVE 1");
+    draw_text(_x, _y + _height, "SAVE 2");
+    draw_text(_x, _y + (_height * 2), "SAVE 3");
+}
+
+function scr_draw_guide_window()
+{
+    draw_sprite_ext(spr_guide_window, image_index, x, y, 1, 1, image_angle, image_blend, image_alpha);
+    var _x = x - 97;
+    var _y = y + 9;
+    draw_set_color(c_white);
+    draw_set_halign(fa_center);
+    draw_text(_x, _y, "GUIDE");
+}
+
+function scr_create_option_button()
+{
+    gui = true;
+    act_resize = true;
+}
+
+function scr_create_option_guide()
+{
+    gui = true;
+    act_resize = true;
+    spr_sel = spr_button_guide_icon_sel;
+}
+
+function scr_create_alpha_set_button()
+{
+    scr_create_option_button();
+    
+    if (button_num < 12 && (button_num % 2) != 0)
+        image_xscale = -1;
+    
+    if (button_num >= 8)
+        y += 1;
+}
+
+function scr_create_guide_g_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    switch_type = false;
+    fail_shake = false;
+    
+    switch (global.val.language)
+    {
+        case UnknownEnum.Value_0:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_1:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "巢";
+                    break;
+                
+                case 1:
+                    guide_text = "袭击";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_2:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_3:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_4:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_5:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_6:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_7:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_8:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+        
+        case UnknownEnum.Value_9:
+            switch (button_num)
+            {
+                case 0:
+                    guide_text = "NEST";
+                    break;
+                
+                case 1:
+                    guide_text = "RAID";
+                    break;
+                
+                case 2:
+                    guide_text = "CELLS";
+                    break;
+                
+                case 3:
+                    guide_text = "BACK";
+                    spr_sel = spr_button_bar_sel;
+                    break;
+            }
+            
+            break;
+    }
+}
+
+function scr_create_guide_basic_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    guide_group = 0;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "CONTROLS";
+            break;
+        
+        case 1:
+            guide_text = "QUEST";
+            break;
+        
+        case 2:
+            guide_text = "PRISON";
+            break;
+        
+        case 3:
+            guide_text = "BIRTH";
+            break;
+        
+        case 4:
+            guide_text = "CLEANING";
+            break;
+        
+        case 5:
+            guide_text = "RATION";
+            break;
+        
+        case 6:
+            guide_text = "MOOD";
+            break;
+        
+        case 7:
+            guide_text = "MILK";
+            break;
+        
+        case 8:
+            guide_text = "CELL STATS";
+            break;
+        
+        case 9:
+            guide_text = "HOTKEYS";
+            break;
+        
+        case 10:
+            guide_text = "DEMOLISH";
+            break;
+        
+        case 11:
+            guide_text = "TENTACLES";
+            break;
+    }
+}
+
+function scr_create_guide_cell_button()
+{
+    var _type = global.guide_order_cell[button_num];
+    var _num = array_length(global.val.guide_unlock.cell);
+    var _exists = false;
+    
+    for (var i = 0; i < _num; i++)
+    {
+        if (global.val.guide_unlock.cell[i] == _type)
+        {
+            _exists = true;
+            i = _num;
+        }
+    }
+    
+    if (!_exists)
+    {
+        instance_destroy();
+    }
+    else
+    {
+        scr_create_option_button();
+        spr_sel = spr_button_guide_sel;
+        guide_group = 2;
+        guide_new = false;
+        
+        switch (button_num)
+        {
+            case 0:
+                guide_text = "DISPLAY";
+                break;
+            
+            case 1:
+                guide_text = "BIRTH 2";
+                break;
+            
+            case 2:
+                guide_text = "DRINK";
+                break;
+            
+            case 3:
+                guide_text = "TRANSFER";
+                break;
+            
+            case 4:
+                guide_text = "RECOVER";
+                break;
+            
+            case 5:
+                guide_text = "MILK 2";
+                break;
+            
+            case 6:
+                guide_text = "PATROL";
+                break;
+            
+            case 7:
+                guide_text = "CLONE";
+                break;
+            
+            case 8:
+                guide_text = "F.SHRINE";
+                break;
+            
+            case 9:
+                guide_text = "R.SHRINE";
+                break;
+            
+            case 10:
+                guide_text = "S.SHRINE";
+                break;
+            
+            case 11:
+                guide_text = "L.SHRINE";
+                break;
+        }
+        
+        for (var i = 0; i < ds_list_size(global.new_guide_list); i++)
+        {
+            if (ds_list_find_value(global.new_guide_list, i) == _type)
+            {
+                i = ds_list_size(global.new_guide_list);
+                guide_new = true;
+            }
+        }
+    }
+}
+
+function scr_create_guide_raiding_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    guide_group = 1;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "RAIDING";
+            break;
+        
+        case 1:
+            guide_text = "TRADER";
+            break;
+        
+        case 2:
+            guide_text = "SHOP";
+            break;
+        
+        case 3:
+            guide_text = "BLUEPRINTS";
+            break;
+        
+        case 4:
+            guide_text = "TROOP LEVEL";
+            break;
+        
+        case 5:
+            guide_text = "SKILL LEVEL";
+            break;
+        
+        case 6:
+            guide_text = "CAPTURING";
+            break;
+        
+        case 7:
+            guide_text = "CASUALTIES";
+            break;
+    }
+}
+
+function scr_create_debug()
+{
+    draw_sprite_ext(spr_guide_window, image_index, x, y, 1, 1, image_angle, image_blend, image_alpha);
+    var _x = x - 97;
+    var _y = y + 9;
+    draw_set_color(c_white);
+    draw_set_halign(fa_center);
+    draw_text(_x, _y, "DEBUG");
+}
+
+function scr_create_debug_buttons()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    switch_type = false;
+    fail_shake = false;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "GENERAL";
+            break;
+        
+        case 1:
+            guide_text = "SPAWN";
+            break;
+        
+        case 2:
+            guide_text = "UNLOCK";
+            break;
+        
+        case 3:
+            guide_text = "Speeds";
+            break;
+        
+        case 4:
+            guide_text = "BACK";
+            spr_sel = spr_button_bar_sel;
+            break;
+    }
+}
+
+function scr_create_debug_general_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    guide_group = 0;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "Nothing";
+            break;
+        
+        case 1:
+            guide_text = "Also nothing";
+            break;
+    }
+}
+
+function scr_create_debug_spawn_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    guide_group = 1;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "Food";
+            break;
+        
+        case 1:
+            guide_text = "Money";
+            break;
+        
+        case 2:
+            guide_text = "Goblin";
+            break;
+        
+        case 3:
+            guide_text = "Hobgoblin";
+            break;
+        
+        case 4:
+            guide_text = "Tentacle";
+            break;
+        
+        case 5:
+            guide_text = "Orc";
+            break;
+        
+        case 6:
+            guide_text = "Cave Floor";
+            break;
+    }
+}
+
+function scr_create_debug_unlock_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    guide_group = 2;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "HATHOR";
+            break;
+        
+        case 1:
+            guide_text = "NYX";
+            break;
+        
+        case 2:
+            guide_text = "SELENE";
+            break;
+        
+        case 3:
+            guide_text = "MORRIGAN";
+            break;
+        
+        case 4:
+            guide_text = "LILLITH";
+            break;
+        
+        case 5:
+            guide_text = "FRIEREN";
+            break;
+        
+        case 6:
+            guide_text = "Village LVL";
+            break;
+        
+        case 7:
+            guide_text = "Mountain LVL";
+            break;
+        
+        case 8:
+            guide_text = "Forest LVL";
+            break;
+        
+        case 9:
+            guide_text = "Castle LVL";
+            break;
+        
+        case 10:
+            guide_text = "Breeding Tips";
+            break;
+        
+        case 11:
+            guide_text = "All Cells";
+            break;
+    }
+}
+
+function scr_draw_debug5001_speed_window()
+{
+    draw_sprite_ext(spr_guide_window, image_index, x, y, 1, 1, image_angle, image_blend, image_alpha);
+    var _x = x - 97;
+    var _y = y + 9;
+    draw_set_color(c_white);
+    draw_set_halign(fa_center);
+    draw_text(_x, _y, "DEBUG");
+    _x = x - 60;
+    _y = y + 8;
+    var _width = 83;
+    draw_set_color(c_white);
+    draw_set_halign(fa_left);
+    draw_text(_x, _y, "World (0-10)");
+    draw_text(_x, _y + 12, "Cart (0-10)");
+    draw_set_halign(fa_center);
+    draw_text(_x + _width, _y, string(global.w_spd));
+    draw_text(_x + _width, _y + 12, string(global.val.cart_spd));
+}
+
+function scr_create_spawn_unit_number_button()
+{
+    scr_create_option_button();
+    spr_sel = spr_button_guide_sel;
+    var unit_amount = 0;
+    
+    switch (button_num)
+    {
+        case 0:
+            guide_text = "0.5";
+            unit_amount = 0.5;
+            break;
+        
+        case 1:
+            guide_text = "1";
+            unit_amount = 1;
+            break;
+        
+        case 2:
+            guide_text = "5";
+            unit_amount = 5;
+            break;
+        
+        case 3:
+            guide_text = "10";
+            unit_amount = 10;
+            break;
+        
+        case 4:
+            guide_text = "25";
+            unit_amount = 25;
+            break;
+        
+        case 5:
+            guide_text = "50";
+            unit_amount = 50;
+            break;
+    }
+}
+
+enum UnknownEnum
+{
+    Value_0,
+    Value_1,
+    Value_2,
+    Value_3,
+    Value_4,
+    Value_5,
+    Value_6,
+    Value_7,
+    Value_8,
+    Value_9,
+    Value_31 = 31,
+    Value_53 = 53
+}
